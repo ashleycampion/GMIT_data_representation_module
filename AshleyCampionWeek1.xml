@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library>
+    <book category="technical">
+        <ISBN>1234</ISBN>
+        <title>Hacking with Kali</title>
+        <author>Caligula</author>
+    </book>
+    <book category="technical">
+        <ISBN>12345</ISBN>
+        <title>SQL for Dummies</title>
+        <author>An Ex-Dummy</author>
+    </book>
+    <book category="cookery">
+        <ISBN>123456</ISBN>
+        <title>Creme Brulee And You</title>
+        <author>Vanilla Spice</author>
+    </book>
+    <book category="cookery">
+        <ISBN>1234567</ISBN>
+        <title>Korma for Kids</title>
+        <author>Not a Kid</author>
+    </book>
+</library>
