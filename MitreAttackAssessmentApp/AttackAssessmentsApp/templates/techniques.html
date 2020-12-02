@@ -1,0 +1,50 @@
+{% extends "navBar.html" %}
+
+{% block content %}
+<body>
+<script src="/techniques.js"></script>
+
+    <div id="create-update">
+        <h3 id="create-title">Create Sub/Technique</h3>
+        <h3 id="update-title">Update Sub/Technique</h3>
+        <table id="createUpdateForm">
+            <tr>
+                <td>Attack ID</td>
+                <td><input class="descriptionText" type="text" name="attackID" id="idInput"></td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td><input class="descriptionText" type="text" name="patternName"></td>
+            </tr>
+            <tr>
+                <td>Tactic</td>
+                <td><input class="descriptionText" type="text" name="tactic"></td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td><textarea class="descriptionText" rows=5 name="description"></textarea></td>
+            </tr>
+            <tr>    
+                <td>Defense</td>
+                <td><input class="descriptionText" type="number" name="assessment"></td>
+            </tr>
+            <tr>
+                <td></td><td>
+                    <button id="create-button" class="btn btn-success" onclick="doCreate()">Create</button>     
+                    <button id="update-button" class="btn btn-success" onclick="doUpdate()">Update</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="display">
+        <table id="attackPatternTable" style="background-color: whitesmoke;" class="table">
+            <tr class="tableHeader">
+                <th>Attack ID</th><th>Sub/Technique Name</th><th>Tactic</th><th>Description</th><th>Defence</th><th></th><th></th>
+            </tr>
+            
+        </table>
+
+    </div>
+
+
+{% endblock content %}

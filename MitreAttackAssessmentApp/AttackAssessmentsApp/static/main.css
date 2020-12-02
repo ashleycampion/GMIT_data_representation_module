@@ -1,0 +1,23 @@
+body {
+    background-color: whitesmoke;
+}
+
+.tableHeader {
+    background-color: slategray;
+}
+
+#create-update {
+    width: 30%;
+    margin: auto;
+    margin-top:8%;
+    border-color: blue;
+    min-width: 200px; 
+    position: relative;
+    display: none;
+}
+
+.descriptionText {
+    width: 300px;
+    resize: none;
+}
+

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+    {% if title %}
+        <title>{{ title }}</title>
+    {% else %}
+        <title>Att&ck Assessments</title>
+    {% endif %}
+  </head>
+  <body>
+      <nav class="navbar navbar-expand-sm navbar-dark bg-info">
+          <div style="min-width:330px">
+            <a class="navbar-brand">{{title}}</a>
+          <button style="margin-bottom:5px"class="btn btn-dark btn-sm" onClick="showCreate()">Create New</button>
+          </div>
+          <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId"
+              aria-expanded="false" aria-label="Toggle navigation"></button>
+          <div class="collapse navbar-collapse" id="collapsibleNavId">
+              <ul style="padding-left:20%" class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active" class="text-muted">
+                  <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only">(current)</span></a>
+              </li>
+                  <li class="nav-item active">
+                      <a class="nav-link" href="{{ url_for('tactics') }}">Tactics <span class="sr-only">(current)</span></a>
+                  </li>
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sub/Techniques</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownId">
+                        <a class="dropdown-item" href="/techniques/all">All</a>
+                        {% for tactic in tactics %}
+                        <a class="dropdown-item" href="/techniques/{{tactic}}">{{tactic}}</a>
+                        {% endfor %}
+                    </div>
+                </li>
+                  <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('adversaries') }}">Adversaries <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('malwareTools') }}">Malware / Tools <span class="sr-only">(current)</span></a>
+                </li>
+              </ul>
+            <a class="nav-item active" class="text-right" style="color:white; text-decoration: none;" href="#">Log Out &nbsp;&nbsp;&nbsp;<span class="fa fa-sign-out"></span>&nbsp;&nbsp;&nbsp;<span class="sr-only">(current)</span></a>
+          </div>
+      </nav>
+
+      {% block content %}{% endblock %}
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
