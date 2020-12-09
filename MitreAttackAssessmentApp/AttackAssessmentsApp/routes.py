@@ -1,7 +1,12 @@
 from flask import Flask, url_for, request, redirect, abort, jsonify, render_template, flash
 from AttackAssessmentsApp.dbFiles.AaDAO import aaDAO
-from AttackAssessmentsApp import app
+from AttackAssessmentsApp import app, bcrypt, login_manager
 from AttackAssessmentsApp.forms import RegistrationForm, LoginForm
+from flask_login import login_user, current_user, logout_user, login_required
+
+import loginManager
+
+global current_user
 
 @app.context_processor
 def processor():
@@ -11,82 +16,112 @@ def processor():
         tacticsList.append(x["tacticName"])
     return dict(tactics=tacticsList)
 
-# taken from https://github.com/CoreyMSchafer/code_snippets/blob/master/Python/Flask_Blog/03-Forms-and-Validation/flaskblog.py
+# https://github.com/CoreyMSchafer/code_snippets/blob/master/Python/Flask_Blog/06-Login-Auth/flaskblog/routes.py
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash(f'Account created for {form.username.data}!', 'success')
-        return redirect(url_for('home'))
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        aaDAO.createUser(form.email.data, hashed_password)
+        flash('Your account has been created! You are now able to log in', 'success')
+        return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
-# taken from https://github.com/CoreyMSchafer/code_snippets/blob/master/Python/Flask_Blog/03-Forms-and-Validation/flaskblog.py
+# https://github.com/CoreyMSchafer/code_snippets/blob/master/Python/Flask_Blog/06-Login-Auth/flaskblog/routes.py
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == 'admin@blog.com' and form.password.data == 'password':
-            flash('You have been logged in!', 'success')
-            return redirect(url_for('home'))
+        user = aaDAO.getUser(form.email.data)
+        if user and bcrypt.check_password_hash(user[0][1], form.password.data):
+            user = loginManager.User(user[0][0])
+            login_user(user, remember=form.remember.data, force=True)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('home'))
         else:
-            flash('Login Unsuccessful. Please check username and password', 'danger')
+            flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+'''@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect(url_for('login'))'''
+
+
 @app.route('/')
-def root():
-    return render_template('home.html', title="Home")
-
-
 @app.route('/home')
+@login_required
 def home():
     return render_template('home.html', title="Home")
 
 @app.route('/tactics')
+@login_required
 def tactics():
     return render_template('tactics.html', title="Tactics")
 
 @app.route('/techniques/<type>')
+@login_required
 def techniques(type):
     return render_template('techniques.html', title = f"Techniques: {type}")
 
 @app.route('/adversaries')
+@login_required
 def adversaries():
     return render_template('adversaries.html', title="Adversaries")
 
 @app.route('/malware-tools')
+@login_required
 def malwareTools():
     return render_template('malware-tools.html', title="Malware / Tools")
 
 
 @app.route('/api/tactics')
+@login_required
 def getAllTactics():
     return jsonify(aaDAO.getAllTactics())
 
 @app.route('/api/attackPatterns')
+@login_required
 def getAllAttackPatterns():
     return jsonify(aaDAO.getAllAttackPatterns())
 
 @app.route('/api/adversaries')
+@login_required
 def getAllAdversaries():
     return jsonify(aaDAO.getAllAdversaries())
 
 @app.route('/api/malware')
+@login_required
 def getAllMalware():
     return jsonify(aaDAO.getAllMalware())
 
 @app.route('/api/<attackID>')
+@login_required
 def findByAttackID(attackID):
     return jsonify(aaDAO.findByAttackID(attackID))
 
 @app.route('/api/adversary/<name>')
+@login_required
 def getAllAttackIDsByAdversaryName(name):
     return jsonify(aaDAO.getAllAttackIDsByAdversaryName(name, "Actor"))
 
 @app.route('/api/malware/<name>')
+@login_required
 def getAllAttackIDsByMalwareName(name):
     return jsonify(aaDAO.getAllAttackIDsByAdversaryName(name, "Malware"))
 
 @app.route('/api/tactics', methods=['POST'])
+@login_required
 def createTactic():
     if not request.json:
         abort(400)
@@ -99,6 +134,7 @@ def createTactic():
     return jsonify(aaDAO.createTactic(tactic))
 
 @app.route('/api/attackPatterns', methods=['POST'])
+@login_required
 def createAttackPattern():
     if not request.json:
         abort(400)
@@ -115,6 +151,7 @@ def createAttackPattern():
 
 
 @app.route('/api/adversaries', methods=['POST'])
+@login_required
 def createAdversary():
     if not request.json:
         abort(400)
@@ -128,6 +165,7 @@ def createAdversary():
     return jsonify(aaDAO.createAdversary(adversary))
 
 @app.route('/api/<attackID>', methods=['PUT'])
+@login_required
 def update(attackID):
     foundAssessment = aaDAO.findByAttackID(attackID)
     if foundAssessment == {}:
@@ -154,6 +192,7 @@ def update(attackID):
 
 
 @app.route('/api/adversary/<name>', methods=['PUT'])
+@login_required
 def updateAdversary(name):
     foundAdversary = aaDAO.findAdversaryByName(name)
     if foundAdversary == {}:
@@ -167,6 +206,7 @@ def updateAdversary(name):
     return jsonify(foundAdversary)
 
 @app.route('/api/malware/<name>', methods=['PUT'])
+@login_required
 def updateMalware(name):
     foundAdversary = aaDAO.findMalwareByName(name)
     if foundAdversary == {}:
@@ -180,12 +220,16 @@ def updateMalware(name):
     return jsonify(foundAdversary)
 
 @app.route('/api/<name>', methods=['DELETE'])
+@login_required
 def delete(name):
     aaDAO.delete(name)
     return jsonify({"done": True})
 
 
 @app.route('/api/updateTacticsAssessments', methods=['PUT'])
+@login_required
 def updateTacticsAssessments():
     aaDAO.updateTacticsAssessments()
     return jsonify(aaDAO.getAllTactics())
+
+

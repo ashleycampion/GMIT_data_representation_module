@@ -1,7 +1,5 @@
 # Warning! Running this file may replace any tables
-# previously created for this app. Ensure lines 56-59 
-# are commented out to prevent replacement of tables
-# if they already exist.
+# previously created for this app.
 
 import mysql.connector
 from AttackAssessmentsApp.dbFiles import config as cfg
@@ -29,7 +27,7 @@ class CreateDb:
             )
         else:
             cursor.execute("create database AttackAssessment;")
-            print("Database 'AttackAssessment has been created.")
+            print("Database 'AttackAssessment' has been created.")
 
 
 CreateDb = CreateDb()

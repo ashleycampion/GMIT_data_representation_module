@@ -214,6 +214,10 @@ class TableCreator:
         #print("Table 'attackPatterns' deleted.")
         #cursor.execute("drop table adversaries;")
         #print("Table 'adversaries' deleted.")
+        #cursor.execute("drop table malware;")
+        #print("Table 'malware' deleted.")
+        #cursor.execute("drop table users;")
+        #print("Table 'users' deleted.")
 
         cursor.execute("show tables;")
         tables=[]
@@ -230,7 +234,7 @@ class TableCreator:
                 self.populateAttackPatternsTable()
                 print("Table 'attackPatterns' created and populated successfully.")
             else:
-                print("Table 'attackPatterns' already exists. Comment out line 30 of AttackAssessmentApp/dbFiles/createDB.py to have this table replaced.")
+                print("Table 'attackPatterns' already exists. Comment out the appropriate lines around 210-218 to have this table replaced.")
             
             if "tactics" not in tables[0]:
                 print("Creating table 'tactics'... ")
@@ -239,7 +243,7 @@ class TableCreator:
                 self.populateTacticsTable()
                 print("Table 'tactics' created and populated successfully.")
             else:
-                print("Table 'tactics' already exists. Comment out line 28 of AttackAssessmentApp/dbFiles/createDB.py to have this table replaced.")
+                print("Table 'tactics' already exists. Comment out the appropriate lines around 210-218 to have this table replaced.")
             
             if "adversaries" not in tables[0]:
                 print("Creating table 'adversaries'...")
@@ -248,7 +252,7 @@ class TableCreator:
                 self.populateAdversariesTable()
                 print("Table 'adversaries' created and populated successfully.")
             else:
-                print("Table 'adversaries' already exists. Comment out line 60 of AttackAssessmentApp/dbFiles/createDB.py to have this table replaced.")
+                print("Table 'adversaries' already exists. Comment out the appropriate lines around 210-218 to have this table replaced.")
             
             if "malware" not in tables[0]:
                 print("Creating table 'malware'...")
@@ -257,7 +261,15 @@ class TableCreator:
                 self.populateMalwareTable()
                 print("Table 'malware' created and populated successfully.")
             else:
-                print("Table 'malware' already exists. Comment out line 60 of AttackAssessmentApp/dbFiles/createDB.py to have this table replaced.")
+                print("Table 'malware' already exists. Comment out the appropriate lines around 210-218 to have this table replaced.")
+
+            if "users" not in tables[0]:
+                print("Creating table 'users'...")
+                sql = "create table users(email varchar(32) PRIMARY KEY, password varchar(300));"
+                cursor.execute(sql)
+                print("Table 'users' created and populated successfully.")
+            else:
+                print("Table 'users' already exists. Comment out the appropriate lines around 210-218 to have this table replaced.")
 
 
         if len(tables) == 0:
@@ -278,13 +290,19 @@ class TableCreator:
             sql = "create table adversaries(name varchar(32) PRIMARY KEY, description varchar(2000), inherentRisk int, defense int, residualRisk int);"
             cursor.execute(sql)
             self.populateAdversariesTable()
-            print("All tables created and populated successfully.")
+            print("Table 'adversaries' created and populated successfully.")
 
 
             print("Creating table 'malware'...")
             sql = "create table malware(name varchar(32) PRIMARY KEY, description varchar(2000), inherentRisk int, defense int, residualRisk int);"
             cursor.execute(sql)
             self.populateMalwareTable()
+            print("Table 'malware' created and populated successfully.")
+
+            print("Creating table 'users'...")
+            sql = "create table users(email varchar(32) PRIMARY KEY, password varchar(300));"
+            cursor.execute(sql)
+            print("Table 'users' created and populated successfully.")
             print("All tables created and populated successfully.")
 
 
@@ -425,6 +443,8 @@ class TableCreator:
             AaDAO.aaDAO.createMalware(adversary)
         AaDAO.aaDAO.updateMalwareAssessments()
         self.populateTechniqueMalwareTables()
+
+
 
 tableCreator = TableCreator()
 

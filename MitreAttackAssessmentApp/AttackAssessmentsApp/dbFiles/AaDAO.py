@@ -14,6 +14,24 @@ class AaDAO:
         )
         print("Connection made to AttackAssessment database.")
 
+    def createUser(self, user, password):
+        cursor = self.db.cursor()
+        sql = "insert into users (email, password) values (%s, %s)"
+        values = [
+            user,
+            password
+        ]
+        cursor.execute(sql, values)
+        self.db.commit()
+        return cursor.lastrowid
+
+    def getUser(self, email):
+        cursor = self.db.cursor()
+        sql = "select * from users where email = %s"
+        values = [email]
+        cursor.execute(sql, values)
+        result = cursor.fetchall()
+        return result
 
     def createTactic(self, tactic):
         cursor = self.db.cursor()
@@ -72,35 +90,7 @@ class AaDAO:
         self.db.commit()
         return cursor.lastrowid
 
-    '''def createAdversaryTechniquesTable(self, adversary):
-        cursor = self.db.cursor()
-        #backticks required for table-names with spaces
-        sql = f"create table `{adversary}` (attackID varchar(30));"
-        cursor.execute(sql)
-        return
 
-    def createAdversaryTechnique(self, adversary, attackID):
-        cursor = self.db.cursor()
-        sql = f"insert into `{adversary}` (attackID) values ('{attackID}');"
-        cursor.execute(sql)
-        self.db.commit()
-        return cursor.lastrowid
-
-
-    def createTechniqueAdversariesTable(self, technique):
-        cursor = self.db.cursor()
-        sql = f"create table `{technique}` (adversary varchar(30));"
-        cursor.execute(sql)
-        return
-
-    def createTechniqueAdversary(self, technique, adversary):
-        cursor = self.db.cursor()
-        sql = f"insert into `{technique}` (adversary) values ('{adversary}');"
-        cursor.execute(sql)
-        self.db.commit()
-        return cursor.lastrowid'''
-
-###############################################################
     def createTechniquesOfAdversaryTable(self, user, type):
         cursor = self.db.cursor()
         #backticks required for table-names with spaces
@@ -127,7 +117,7 @@ class AaDAO:
         cursor.execute(sql)
         self.db.commit()
         return cursor.lastrowid
-##########################################################
+
 
     def getAllTactics(self):
         cursor = self.db.cursor()
@@ -204,25 +194,6 @@ class AaDAO:
         result = cursor.fetchone()
         if result:
             return self.convertAdversaryToDict(result)
-
-########################################################################
-
-
-
-    '''def getAllAdversariesByAttackID(self, attackID, type):
-        cursor = self.db.cursor()
-        sql = f"select adversary from `{attackID}` where type = {type}"
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        resultArray = []
-        for i in results:
-            resultArray.append(i[0])
-        return resultArray'''
-    
-
-
-
-##########################################################
 
 
 
@@ -333,35 +304,6 @@ class AaDAO:
         return int(tactic["assessment"])
 
 
-#use technique to group instead
-    '''def updateAllAdversariesOneTechnique(self, attackID, oldDefense, newDefense):
-        adversaries = aaDAO.getAllAdversaries()
-        for adversary in adversaries:
-            print(adversary['name'])
-            print(list(tableCreator.adversaryTechniques.keys()))
-            if adversary['name'] in list(tableCreator.adversaryTechniques.keys()):
-                name = adversary['name']
-                print(name)
-                for technique in tableCreator.adversaryTechniques[name]:
-                    if technique == attackID:
-                        adversary['defense'] = tableCreator.adversaryTechniques[name] / (adversary['defense'] + newDefense - oldDefense)
-                        aaDAO.updateAdversary(adversary)'''
-
-
-    '''def updateAllAdversariesOneTechnique(self, attackID, oldDefense, newDefense):
-        cursor = self.db.cursor()
-        adversaries = self.getAllAdversariesByAttackID(attackID)
-        for adversaryName in adversaries:
-            sql = "update adversaries set defense = %s, residualRisk = %s where name = %s"
-            adversary = self.findAdversaryByName(adversaryName)
-            defense =  (adversary['defense'] + newDefense - oldDefense) / len(self.getAllAttackIDsByAdversaryName(adversaryName))
-            residualRisk = adversary['inherentRisk'] - ((defense / 100) * adversary['inherentRisk'])
-            values= [defense, residualRisk, adversaryName]
-            cursor.execute(sql, values)
-            self.db.commit()
-        return'''
-
-
 
     def updateAllAdversariesOneTechnique(self, attackID, oldDefense, newDefense):
         cursor = self.db.cursor()
@@ -384,23 +326,6 @@ class AaDAO:
                 cursor.execute(sql, values)
                 self.db.commit()
         return
-
-
-
-    '''def updateAdversariesAssessments(self):
-        adversaries = self.getAllAdversaries()
-        for adversary in adversaries:
-            defensesList = []
-            attackIDs = self.getAllAttackIDsByAdversaryName(adversary['name'])
-            for attackID in attackIDs:
-                defensesList.append(self.findByAttackID(attackID)['assessment'])
-            try:
-                adversary['defense'] = sum(defensesList) / len(defensesList)
-                adversary['residualRisk'] = adversary['inherentRisk'] * adversary['defense'] / 100
-                self.updateAdversary(adversary)
-            except ZeroDivisionError:
-                continue
-        return'''
 
 
     def updateAdversariesAssessments(self):
@@ -434,33 +359,6 @@ class AaDAO:
                 continue
         return
 
-
-
-    # this takes a very long time to run, but updates all adversaries for all techniques
-    # this is currently only run when the database is created,
-    # but needs to be run then because we are using dummy data
-    '''def updateAdversariesAssessments(self):
-        adversaries = aaDAO.getAllAdversaries()
-        for adversary in adversaries:
-            if adversary['name'] in list(tableCreator.adversaryTechniques.keys()):
-                name = adversary['name']
-                all = self.getAllAttackPatterns()
-                defenses = []
-                defense = 0
-                for technique in tableCreator.adversaryTechniques[name]:
-                    for pattern in all:
-                        if technique == pattern['attackID']:
-                            defenses.append(pattern['assessment'])
-                try:
-                    defense = sum(defenses) / len(defenses)
-                    adversary['defense'] = defense
-                    aaDAO.updateAdversary(adversary)
-                except ZeroDivisionError:
-                    continue
-                defense = sum(tableCreator.adversaryTechniques[name]) / len(tableCreator.adversaryTechniques[name])
-                adversary['defense'] = defense
-                aaDAO.updateAdversary(adversary)
-    '''
         
     def delete(self, name):
         cursor = self.db.cursor()
