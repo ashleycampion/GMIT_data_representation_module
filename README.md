@@ -15,7 +15,7 @@ For more information on the Mitre Att&ck framework, please visit [their website]
 
 ## Directories / Files in MitreAttackAssessmentApp
 * installRequirements.txt: a script to install the required Python packages
-* loginManager.py: implements User class as various functions required to use flask's login-manager
+* loginManager.py: implements User class along with various functions required to use flask's login-manager
 * requirements.txt: the required packages listed
 * runFirstTime.py: to run the app for the first time
 * runNotFirstTime.py: for subsequent runs
