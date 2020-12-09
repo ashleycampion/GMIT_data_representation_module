@@ -15,6 +15,7 @@ For more information on the Mitre Att&ck framework, please visit [their website]
 
 ## Directories / Files in MitreAttackAssessmentApp
 * installRequirements.txt: a script to install the required Python packages
+* loginManager.py: implements User class as various functions required to use flask's login-manager
 * requirements.txt: the required packages listed
 * runFirstTime.py: to run the app for the first time
 * runNotFirstTime.py: for subsequent runs
@@ -32,7 +33,7 @@ For more information on the Mitre Att&ck framework, please visit [their website]
 Python 3.7.4 was used to create the scripts in this repository (download it [here](https://www.python.org/downloads/)). Detailed instructions on how to download and install the latest version of Python are available [here](https://realpython.com/installing-python/). Any version of Python 3 can run the scripts. You can also download Python by downloading the Python distribution, Anaconda. You can download Anaconda [here](https://www.anaconda.com/distribution/), and you will find instructions on how to download and install Anaconda for Windows [here](https://docs.anaconda.com/anaconda/install/windows/).
 
 ## Database Software Required
-The app uses a MYSQL database. MYSQL can be downloaded [here] (https://dev.mysql.com/downloads/installer/).
+The app uses a MYSQL database. Looking back, I should have used SQLAlchemy, as it is much easier to use SQLAlchemy with flask's login-manager package. MYSQL can be downloaded [here] (https://dev.mysql.com/downloads/installer/).
 
 
 ## Python Packages Required
@@ -73,3 +74,12 @@ Other than the login and registration pages, the app consists of five main pages
 5. Same as above but more malware / tools.
 
 The main use for the app is the ability to enter a defence score for each technique (betweeen zero and one hundred, with onr hundred signifying a perfect defence). Aggregate defenses are then calculating for each tactic, adversary and malware/tool depending on the techniques they use/comprise. For adversaries and malware/tools, the user can enter an 'inherent risk' score (again, 0-100, but this time with 100 indicating the highest risk). The application then uses the defense value for the actor to calculate a residual risk score to reflect the true risk that actor or malware/tool presents to the organization.
+
+
+## Incomplete Areas of the App
+
+1. The home page has yet to be populated with content. This will in future provide a dashboard view of stats pertaining to threats etc. prioritized by the user.
+
+2. Verification of legitimacy of email address, and ability to change email address, has not been implemented.
+
+3. Techniques cannot be linked to actors / malware / tools that have not already been linked to them by Mitre Att&ck. This is obviously a critical use case that will be implemented in the future.
