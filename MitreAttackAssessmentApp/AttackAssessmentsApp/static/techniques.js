@@ -216,4 +216,5 @@ function addAttackPatternToTable(attackPattern){
     cell7 = rowElem.insertCell(6)
     cell7.innerHTML = '<button class="btn btn-danger" onclick="doDelete(this)">Delete</button>'
      }
+     
 populateTable()

@@ -83,3 +83,7 @@ The main use for the app is the ability to enter a defence score for each techni
 2. Verification of legitimacy of email address, and ability to change email address, has not been implemented.
 
 3. Techniques cannot be linked to actors / malware / tools that have not already been linked to them by Mitre Att&ck. This is obviously a critical use case that will be implemented in the future.
+
+4. There is currently a bug that if one access the techniques pages via the navbar when on the adversaries or malware pages, one is presented with no techniques. This is due to how the techniques page is currently set up to filter the techniques to be shown.
+
+5. I also encountered a MYSQL.OperationalError problem when accessing the techniques pages. I was not able to resolve this programmatically. I believe this error was due to a MYSQL service error. I fixed it by restarting the MYSQL service.

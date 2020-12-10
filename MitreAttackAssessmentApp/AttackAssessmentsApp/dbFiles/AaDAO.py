@@ -6,16 +6,28 @@ from AttackAssessmentsApp.dbFiles.createTables import tableCreator as tableCreat
 class AaDAO:
     db = ""
     def __init__(self):
+        self.connectToDB()
+    
+        
+    def connectToDB(self):
         self.db = mysql.connector.connect(
-            host=cfg.ms['host'],
-            user=cfg.ms['username'],
-            password=cfg.ms['password'],
-            database=cfg.ms['database']
-        )
+                host=cfg.ms['host'],
+                user=cfg.ms['username'],
+                pool_reset_session=False,
+                password=cfg.ms['password'],
+                database=cfg.ms['database'],
+                pool_name = 'thePool',
+                pool_size = 32
+            )
         print("Connection made to AttackAssessment database.")
+        
+    def getCursor(self):
+        if not self.db.is_connected():
+            self.connectToDB()
+        return self.db.cursor()
 
     def createUser(self, user, password):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "insert into users (email, password) values (%s, %s)"
         values = [
             user,
@@ -23,18 +35,34 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
-        return cursor.lastrowid
-
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
+    # this method was resulting in MYSQL OperationalErrors
+    # so I wrapped in try except and created new connections in except
+    # solution only found when restarted MYSQL service
     def getUser(self, email):
-        cursor = self.db.cursor()
-        sql = "select * from users where email = %s"
-        values = [email]
-        cursor.execute(sql, values)
-        result = cursor.fetchall()
-        return result
+        try:
+            cursor = self.getCursor()
+            sql = "select * from users where email = %s"
+            values = [email]
+            cursor.execute(sql, values)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
+        except:
+            self.db.close()
+            self.connectToDB()
+            cursor = self.getCursor()
+            sql = "select * from users where email = %s"
+            values = [email]
+            cursor.execute(sql, values)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
 
     def createTactic(self, tactic):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "insert into tactics (attackID, tacticName, description, assessment) values (%s, %s, %s, %s)"
         values = [
             tactic['attackID'],
@@ -44,10 +72,12 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
-        return cursor.lastrowid
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
 
     def createAttackPattern(self, pattern):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "insert into attackPatterns (attackID, patternName, tacticName, isSubtechnique, hasSubtechnique, description, assessment) values (%s, %s, %s, %s, %s, %s, %s)"
         values = [
             pattern['attackID'],
@@ -60,10 +90,12 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
-        return cursor.lastrowid    
+        rwid = cursor.lastrowid    
+        cursor.close()
+        return rwid
 
     def createAdversary(self, adversary):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "insert into adversaries (name, description, inherentRisk, defense, residualRisk) values (%s, %s, %s, %s, %s)"
         values = [
             adversary['name'],
@@ -74,10 +106,12 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
-        return cursor.lastrowid
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
 
     def createMalware(self, malware):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "insert into malware (name, description, inherentRisk, defense, residualRisk) values (%s, %s, %s, %s, %s)"
         values = [
             malware['name'],
@@ -88,39 +122,47 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
-        return cursor.lastrowid
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
 
 
     def createTechniquesOfAdversaryTable(self, user, type):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         #backticks required for table-names with spaces
         sql = f"create table `{type}:{user}` (attackID varchar(30));"
         cursor.execute(sql)
+        cursor.close()
         return
 
     def createTechniqueOfAdversary(self, user, attackID, type):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = f"insert into `{type}:{user}` (attackID) values ('{attackID}');"
         cursor.execute(sql)
         self.db.commit()
-        return cursor.lastrowid
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
 
     def createAdversaryUsingTechniqueTable(self, technique):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = f"create table `{technique}` (user varchar(30), type varchar(10));"
         cursor.execute(sql)
+        cursor.close()
         return
 
     def createAdversaryUsingTechnique(self, technique, user, type):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = f"insert into `{technique}` (user, type) values ('{user}', '{type}');"
         cursor.execute(sql)
         self.db.commit()
-        return cursor.lastrowid
+        rwid = cursor.lastrowid
+        cursor.close()
+        return rwid
 
 
     def getAllTactics(self):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from tactics"
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -128,10 +170,11 @@ class AaDAO:
         for result in results:
             resultAsDict = self.convertTacticToDict(result)
             resultArray.append(resultAsDict)
+        cursor.close()
         return resultArray
 
     def getAllAttackPatterns(self):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from attackPatterns"
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -139,10 +182,11 @@ class AaDAO:
         for result in results:
             resultAsDict = self.convertPatternToDict(result)
             resultArray.append(resultAsDict)
+        cursor.close()
         return resultArray
 
     def getAllAdversaries(self):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from adversaries"
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -150,11 +194,12 @@ class AaDAO:
         for result in results:
             resultAsDict = self.convertAdversaryToDict(result)
             resultArray.append(resultAsDict)
+        cursor.close()
         return resultArray
 
 
     def getAllMalware(self):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from malware"
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -162,32 +207,35 @@ class AaDAO:
         for result in results:
             resultAsDict = self.convertAdversaryToDict(result)
             resultArray.append(resultAsDict)
+        cursor.close()
         return resultArray
 
 
     def getAllAdversariesByAttackID(self, attackID):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = f"select adversary from `{attackID}`"
         cursor.execute(sql)
         results = cursor.fetchall()
         resultArray = []
         for i in results:
             resultArray.append(i[0])
+        cursor.close()
         return resultArray
     
 
     def getAllAttackIDsByAdversaryName(self, user, type):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = f"select attackID from `{type}:{user}`"
         cursor.execute(sql)
         results = cursor.fetchall()
         resultArray = []
         for i in results:
             resultArray.append(i[0])
+        cursor.close()
         return resultArray
 
     def findAdversaryByName(self, name):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from adversaries where name = %s"
         values = [name]
         cursor.execute(sql, values)
@@ -198,22 +246,24 @@ class AaDAO:
 
 
     def findMalwareByName(self, name):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "select * from malware where name = %s"
         values = [name]
         cursor.execute(sql, values)
         result = cursor.fetchone()
+        cursor.close()
         if result:
             return self.convertAdversaryToDict(result)
 
 
     def findByAttackID(self, attackID):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         if attackID[:2] == "TA":
             sql = "select * from tactics where AttackID = %s"
             values = [attackID]
             cursor.execute(sql, values)
             result = cursor.fetchone()
+            cursor.close()
             if result:
                 return self.convertTacticToDict(result)
         else:
@@ -221,13 +271,14 @@ class AaDAO:
             values = [attackID]
             cursor.execute(sql, values)
             result = cursor.fetchone()
+            cursor.close()
             if result:
                 return self.convertPatternToDict(result)
         
     
     
     def updateTactic(self, tactic):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "update tactics set tacticName = %s, description = %s, assessment = %s where attackID = %s"
         values = [
             tactic['tacticName'],
@@ -237,10 +288,11 @@ class AaDAO:
         ]
         cursor.execute(sql, values)
         self.db.commit()
+        cursor.close()
         return tactic
 
     def updateAttackPattern(self, pattern):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         oldDefense = self.findByAttackID(pattern['attackID'])['assessment']
         sql = "update attackPatterns set patternName = %s, tacticName = %s, isSubtechnique = %s, hasSubtechnique = %s, description = %s, assessment = %s where attackID = %s"
         values = [
@@ -255,10 +307,11 @@ class AaDAO:
         cursor.execute(sql, values)
         self.db.commit()
         self.updateAllAdversariesOneTechnique(pattern['attackID'], oldDefense, int(pattern['assessment']))
+        cursor.close()
         return pattern
 
     def updateAdversary(self, adversary):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "update adversaries set description = %s, inherentRisk = %s, defense = %s, residualRisk = %s where name = %s"
         values = [
             adversary['description'],
@@ -269,12 +322,13 @@ class AaDAO:
             ]
         cursor.execute(sql, values)
         self.db.commit()
+        cursor.close()
         return adversary
 
 
 
     def updateMalware(self, malware):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "update malware set description = %s, inherentRisk = %s, defense = %s, residualRisk = %s where name = %s"
         values = [
             malware['description'],
@@ -285,6 +339,7 @@ class AaDAO:
             ]
         cursor.execute(sql, values)
         self.db.commit()
+        cursor.close()
         return malware
 
 
@@ -306,7 +361,7 @@ class AaDAO:
 
 
     def updateAllAdversariesOneTechnique(self, attackID, oldDefense, newDefense):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         adversaries = self.getAllAdversariesByAttackID(attackID)
         for adversaryName in adversaries:
             adversary = self.findAdversaryByName(adversaryName)
@@ -325,6 +380,7 @@ class AaDAO:
                 values= [defense, residualRisk, adversaryName]
                 cursor.execute(sql, values)
                 self.db.commit()
+        cursor.close()
         return
 
 
@@ -361,7 +417,7 @@ class AaDAO:
 
         
     def delete(self, name):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "delete from tactics where attackID = %s"
         values = [name]
         cursor.execute(sql, values)
@@ -371,22 +427,25 @@ class AaDAO:
         cursor.execute(sql,values)
         sql = "delete from malware where name = %s"
         cursor.execute(sql,values)
+        cursor.close()
         return {}
     
 
     def deleteAdversary(self, name):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "delete from adversaries where name = %s"
         values = [name]
         cursor.execute(sql, values)
+        cursor.close()
         return {}
 
 
     def deleteMalware(self, name):
-        cursor = self.db.cursor()
+        cursor = self.getCursor()
         sql = "delete from malware where name = %s"
         values = [name]
         cursor.execute(sql, values)
+        cursor.close()
         return {}
 
 

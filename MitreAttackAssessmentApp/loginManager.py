@@ -36,7 +36,8 @@ class User():
 # this will be called by @login_required decorator
 @login_manager.user_loader
 def user_loader(email):
-    if not aaDAO.getUser(email):
+    current = aaDAO.getUser(email)
+    if not current:
         return None
     user = User(email)
     user.id = email
